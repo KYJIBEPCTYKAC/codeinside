@@ -1,6 +1,6 @@
 (function (window, undefined)
 {
-
+    var userID, userType;
 
     var app = Ext.application({
       name: 'rstmvn',
@@ -29,23 +29,13 @@
     var win = Ext.create('widget.window',{ // создание окна
     title: 'Авторизация',
     autoHeight: true,
-//    autoScroll: true,           // скроллинг если текст не влезает.
-//    maximizable: true,          // значок «раскрыть окно на весь экран»
-    bodyCls:'red',              // установка класса для содержимого окна.
-                                //Здесь .css1 {background:#fff;color:red;}
-    bodyPadding:'10px',         // установка паддинга для содержимого.
-                                // Лучше конечно через bodyCls
-    bodyStyle: 'background-color:#fff', // прямое указание стиля для содержимого окна
-    closeAction: 'hide',        // !!! Важно. Указание на то, что окно при закрывании
-                                // не удаляется вместе с содержимым,
-
-    shadow: true,               // тень
-    draggable: true,            // возможность перетаскивания окна.
-    closable:  false,            // спрятать иконку закрытия окна в заголовке
-    modal: false,                //  modal задает модальное окно.
-                                // При открсытии делает недоступными все остальные окна
-    headerPosition: 'top', //  заголовок  и кнопку закрытия разместим
-                                //справа {left, top, right, bottom}
+    bodyCls:'red',
+    bodyPadding:'10px',
+    shadow: true,
+    draggable: true,
+    closable:  false,
+    modal: true,
+    headerPosition: 'top',
     layout: {
         type: 'vbox',
         align: 'middle'
@@ -54,7 +44,7 @@
             {
                 xtype: 'textfield',
                 width: '300',
-                name: 'txt_login',
+                id: 'txtLogin',
                 margin: '0 0 5 0',
                 labelWidth: 50,
                 fieldLabel: 'Логин'
@@ -62,26 +52,67 @@
             {
                 xtype: 'textfield',
                 width: '300',
-                name: 'txt_password',
+                inputType: 'password',
+                id: 'txtPassword',
                 margin: '0 0 5 0',
                 labelWidth: 50,
                 fieldLabel: 'Пароль'
             },
             {
                 xtype: 'button',
-                name: 'btn_ok',
+                id: 'btnOk',
                 text: 'OK',
-//                scope: this,
+                scope: this,
                 margin: '0 0 0 20',
-                width: 60
-//                handler: this.onAdd
-            },
-
-    ]
+                width: 60,
+                handler: function(){
+                    var txtLogin = Ext.getCmp('txtLogin');
+                    var txtPassword = Ext.getCmp('txtPassword');
+                    var btnOk = Ext.getCmp('btnOk');
+                    btnOk.setDisabled(true);
+                    ExecQuery("user/login",{name: txtLogin.getValue(), pass: txtPassword.getValue()}, loginComplete, loginError);
+                }
+            }
+            
+    ],
     });
 //    var loginWin = Ext.create('rstmvn.view.LoginWindow', {renderTo: triplex});
 //    loginWin.show();
     win.show();
+    function loginComplete(data){
+        userID = data.id;
+        userType = data.type;
+        
+        if ((userID == -1) || (userType == -1)){
+            var btnOk = Ext.getCmp('btnOk');
+            btnOk.setDisabled(false);
+            showInfo("Ошибка авторизации!");
+            return;
+        }
+        win.close();
+        var txtRole = '';
+        switch (userType){
+            case 0:
+                txtRole = 'повар';
+                break;
+            case 1:
+                txtRole = 'снабженец';
+                break;
+            case 2:
+                txtRole = 'кладовщик';
+                break;
+            case 3:
+                txtRole = 'администратор';
+                break;
+        }
+        showInfo("Авторизация прошла успешно, роль: " + txtRole+".");
+    }
+    function loginError(data){
+        showInfo("Ошибка авторизации!");
+        var btnOk = Ext.getCmp('btnOk');
+        btnOk.setDisabled(false);
+    }
+
 //        var win = Ext.getCmp('login_win');
 
         $(document).bind('keydown', {scope: win}, onKeyPress);
@@ -97,17 +128,11 @@
               return false;
           }
 
-          if (!me.defaultControl)
-            return;
-
           if(event.which === 27){
 
             }
         }
-        
-            showInfo("Загрузка завершена");
       }
     });
-
 })(window);
 

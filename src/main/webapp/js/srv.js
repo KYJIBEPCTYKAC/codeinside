@@ -1,3 +1,5 @@
+var url = MakeURL(window);
+
 function doEnterAction(event) {
     var target = event.target;
     var targetEl = Ext.get(target.id),
@@ -42,5 +44,42 @@ function showInfo(infoTxt, opt_IsDebug){
       slideInDuration: 400,
       autoCloseDelay: 6608,
       minWidth: 400
+    });
+}
+
+/**
+ * Генерирует URL для службы SQL запросов
+ * @returns {string} URL до службы
+ */
+function MakeURL(win) {
+    return win.location.protocol + "//"+win.location.host + "/";
+}
+
+/**
+ @function ExecQuery
+ Выполнение запроса на сервере
+ @param query - путь до метода
+ @param params - параметры запроса
+ @param success_func - имя функции-обработчика успешного выполнения запроса
+ @param error_func - имя функции-обработчика неудачного выполнения запроса
+ @param linkObject - объект, содержащий ссылки на внешние объекты
+ */
+function ExecQuery(query, params, success_func, error_func, linkObject) {
+  function responseProcess(data, xhr){
+    success_func(data, linkObject);
+  }
+
+  function _error_(a,b,c,d){
+    error_func(a, b, c, linkObject);
+  }
+
+    $.ajax({
+      url: url+query,
+      type: 'GET',
+      timeout:600000,
+      data: params,
+      dataType: 'json',
+      success: responseProcess,	// --- success
+      error: _error_	// --- error
     });
 }
