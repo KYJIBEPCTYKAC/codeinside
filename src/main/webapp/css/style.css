@@ -1,0 +1,46 @@
+
+/*-----------------------------Правка стиля ExtJS---------------------------------------*/
+
+.x-column-header-align-left{text-align:center;}	/*центрируем текст заголовков таблиц по центру*/
+
+.x-grid-with-row-lines .x-grid-cell {
+  border-width: 1px 0;
+  border-top-color: #ffffff;
+  border-bottom-color: #d0d0d0;
+} 
+
+.x-grid-with-col-lines .x-grid-cell {
+  padding-right: 0;
+  border-right: 1px solid #d0d0d0;
+}
+
+.x-form-cb-indeterminate  .x-form-checkbox {
+  background-position: 0 -26px;
+}
+
+.x-grid-checkcolumn-indeterminate   {
+  background-position: 0 -26px;
+}
+
+.x-hide-display {
+  display: none !important;
+}
+
+.mandatory_field {
+     background-color: #ffe1e1;
+ }
+/*-----------------------------Правка стиля ExtJS---------------------------------------*/
+#msgWindow {
+    position: absolute; 
+    top: 15px;
+    background-color: #bbbbbb;
+    left: 75px; 
+    width: 225px;
+    height: 45px;
+    padding-top: 20px;
+    padding-left: 10px;
+    border-radius: 5px;
+    line-height: 1px;
+    z-index: 10000;
+    opacity: 0.8;
+}
