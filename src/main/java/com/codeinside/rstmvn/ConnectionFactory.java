@@ -19,7 +19,7 @@ import java.sql.SQLException;
  */
 public class ConnectionFactory {
     private static BoneCP pool = null;
-    public static Connection createConnection() throws SQLException{
+    public static Connection getConnection() throws SQLException{
         if (pool == null) {
 //            Class.forName("org.postgresql.Driver")
             BoneCPConfig config = new BoneCPConfig();

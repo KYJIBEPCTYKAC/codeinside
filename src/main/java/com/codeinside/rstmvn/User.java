@@ -33,7 +33,7 @@ public class User {
         this.type = -1;
         this.name = username;
         this.pass = userpass;
-        Connection conn = ConnectionFactory.createConnection();
+        Connection conn = ConnectionFactory.getConnection();
         PreparedStatement checkLogin = conn.prepareStatement("SELECT userid, usertype from rest.check_login(?, ?);");
         checkLogin.setString(1, username);
         checkLogin.setString(2, userpass);

@@ -1,4 +1,5 @@
 var url = MakeURL(window);
+Ext.Date.defaultFormat = "d-m-Y H:i:s";
 
 function doEnterAction(event) {
     var target = event.target;
