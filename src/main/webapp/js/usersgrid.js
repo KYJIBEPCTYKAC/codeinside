@@ -8,33 +8,39 @@ Ext.define('Rest.UsersGrid', {
         emptyText: 'Нет данных для отображения',
         deferEmptyText: false
       },
-      columns: this.columns,
+      columns: this.columnsList,
       tools: [
         {
           type: 'plus',
           tooltip: 'Добавить',
           scope: this,
-          handler: this.addUser
+          handler: this.addUser.bind(this)
         },
         {
           type: 'refresh',
           tooltip: 'Обновить',
           scope: this,
-          handler: this.reloadUsers
+          handler: this.reloadUsers.bind(this)
         }
       ]
 
     });
     this.callParent();
+      setTimeout(this.startLoad.bind(this),100);
   },
-  columns: [
+  startLoad: function(){
+    this.mask('Загрузка...');
+    ExecQuery('user/getlist', [], this.loadListComplete.bind(this), this.loadListError.bind(this));
+
+  },
+  columnsList: [
     {
       flex:1,
       text: 'Пользователь',
       flex: 2,
       sortable: true,
       minWidth: 80,
-      dataIndex: 'username'
+      dataIndex: 'name'
     },
     {
       flex:1,
@@ -42,7 +48,11 @@ Ext.define('Rest.UsersGrid', {
       flex: 1,
       sortable: true,
       minWidth: 80,
-      dataIndex: 'usertype'
+      dataIndex: 'type',
+      renderer: function (value){
+        return getUserType(value);
+      }
+
     },
     {
       sortable: false,
@@ -73,10 +83,19 @@ Ext.define('Rest.UsersGrid', {
     }
   ],
   reloadUsers: function(){
-
+      this.startLoad();
   },
   addUser: function(){
 
+  },
+  loadListComplete: function(data){
+      var tmpStore = makeStore(data);
+      this.reconfigure(tmpStore, this.columnsList);
+      this.unmask();
+  },
+  loadListError: function(a,b,c){
+      showInfo("Ошибка загрузки");
+      this.unmask();
   }
 
 });

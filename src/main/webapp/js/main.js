@@ -1,3 +1,4 @@
+var user;
 (function (window, undefined)
 {
   var userID, userType, triplex;
@@ -106,30 +107,27 @@
           return;
         }
         win.close();
-        var txtRole = '';
+        var txtRole = getUserType(userType);
         switch (userType) {
           case 0:
-            txtRole = 'повар';
             CreateCooksTab(tabs);
             CreateGoodsTab(tabs);
             break;
           case 1:
-            txtRole = 'снабженец';
             CreateMerchTab(tabs);
             break;
           case 2:
-            txtRole = 'кладовщик';
             CreatePraporTab(tabs);
             break;
           case 3:
-            txtRole = 'администратор';
             CreateUsersTab(tabs);
             CreateGoodsTab(tabs);
             break;
         }
         showInfo("Авторизация прошла успешно, роль: " + txtRole + ".");
+        user = data;
       }
-
+      
       function loginError(data)
       {
         showInfo("Ошибка авторизации!");

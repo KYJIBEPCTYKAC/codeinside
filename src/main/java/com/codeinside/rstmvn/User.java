@@ -28,6 +28,61 @@ public class User {
         return type;
     }
     
+    public String getName(){
+        return name;
+    }
+    
+    public User (int userid, int usertype, String username){
+        id = userid;
+        type = usertype;
+        name = username;
+    }
+    
+    /**
+     * Получает список пользователей
+     * @return список пользователей
+     * @throws SQLException
+     */
+    public static User[] getUserList() throws SQLException{
+        User[] tmpArr;
+        int cnt = 0, userid, usertype;
+        String username;
+        Connection conn = ConnectionFactory.getConnection();
+        conn.setAutoCommit(false);
+        PreparedStatement getUsers = conn.prepareStatement("select * from rest.usersget();", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        ResultSet resultSet = getUsers.executeQuery();
+        int size;
+        try {
+            resultSet.last();
+            size = resultSet.getRow();
+            resultSet.beforeFirst();
+        }
+        catch(SQLException ex) {
+            size = 0;
+        }
+        
+        if (size == 0){
+            return null;
+        }
+        tmpArr = new User[size];
+        
+        while (resultSet.next())
+        {
+            userid = resultSet.getInt(1);
+            usertype = resultSet.getInt(2);
+            username = resultSet.getString(3);
+            tmpArr[cnt] = new User(userid, usertype, username);
+            cnt++;
+            // do something with the results.
+        }
+        resultSet.close();
+        getUsers.close();
+        
+        conn.commit();
+        conn.close();
+        return tmpArr;
+    }
+    
     public User(String username, String userpass) throws SQLException {
         this.id = -1;
         this.type = -1;

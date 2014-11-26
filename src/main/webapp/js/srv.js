@@ -84,3 +84,50 @@ function ExecQuery(query, params, success_func, error_func, linkObject) {
       error: _error_	// --- error
     });
 }
+
+/**
+ * Создает хранилище по массиву объектов
+ * @param data
+ * @param opt_storeID
+ * @returns {*}
+ */
+function makeStore(data, opt_storeID){
+    if (!data.length){
+        return null;
+    }
+    if (!opt_storeID){
+        if (!this.storeIDNum)
+            this.storeIDNum = 0;
+        this.storeIDNum = this.storeIDNum+1;
+        opt_storeID = 'storeID'+this.storeIDNum;
+    }
+    var fields = [];
+    for (key in (data[0])){
+        fields.push(key);
+    }
+    var store1 = Ext.create('Ext.data.Store', {
+        fields: fields,
+        storeID: opt_storeID,
+        data : data
+    });
+    return store1;
+}
+
+function getUserType(numType){
+    var txtRole;
+    switch (numType) {
+        case 0:
+            txtRole = 'повар';
+            break;
+        case 1:
+            txtRole = 'снабженец';
+            break;
+        case 2:
+            txtRole = 'кладовщик';
+            break;
+        case 3:
+            txtRole = 'администратор';
+            break;
+    }
+    return txtRole;
+}

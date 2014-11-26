@@ -8,33 +8,38 @@ Ext.define('Rest.GoodsGrid', {
         emptyText: 'Нет данных для отображения',
         deferEmptyText: false
       },
-      columns: this.columns,
       tools: [
         {
           type: 'plus',
           tooltip: 'Добавить',
           scope: this,
-          handler: this.addUser
+          handler: this.addGoods.bind(this)
         },
         {
           type: 'refresh',
           tooltip: 'Обновить',
           scope: this,
-          handler: this.reloadUsers
+          handler: this.reloadGoods.bind(this)
         }
       ]
 
     });
     this.callParent();
+    setTimeout(this.startLoad.bind(this),100);
+
   },
-  columns: [
+  startLoad: function(){
+     ExecQuery('goods/getlist', [], this.loadListComplete.bind(this), this.loadListError.bind(this));
+
+  },
+  columnsList:[
     {
       flex:1,
       text: 'Товар',
       flex: 1,
       sortable: true,
       minWidth: 80,
-      dataIndex: 'goodsname'
+      dataIndex: 'name'
     },
     {
       sortable: false,
@@ -65,10 +70,16 @@ Ext.define('Rest.GoodsGrid', {
     }
   ],
   reloadGoods: function(){
-
+    this.startLoad();
   },
   addGoods: function(){
 
+  },
+  loadListComplete: function(data){
+    var tmpStore = makeStore(data);
+    this.reconfigure(tmpStore, this.columnsList);
+  },
+  loadListError: function(a,b,c){
+      showInfo("Ошибка загрузки");
   }
-
 });
