@@ -1,5 +1,14 @@
 var url = MakeURL(window);
 Ext.Date.defaultFormat = "d-m-Y H:i:s";
+var localizationURL = url+ "extjs/packages/ext-locale/build/ext-locale-ru.js";
+
+Ext.Loader.loadScript({
+        url: localizationURL,
+        onError: function (a,b,c){
+            showInfo("Ошибка загрузки локализации");
+        }
+    }
+);
 
 function doEnterAction(event) {
     var target = event.target;

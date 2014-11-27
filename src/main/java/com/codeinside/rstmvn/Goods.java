@@ -28,7 +28,42 @@ public class Goods {
         id = goodsid;
         name = goodsname;
     }
+/**
+ * Создает товар, сохраняет его в БД и читает новый идентификатор
+ * @param goodsname
+ * @throws SQLException 
+ */
+    public Goods(String goodsname) throws SQLException{
+        name = goodsname;
+        Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement insertGoods = conn.prepareStatement("SELECT * from rest.goodsadd(?);");
+        insertGoods.setString(1, name);
+        ResultSet rs = insertGoods.executeQuery();
+        rs.next();
+        this.id = rs.getLong(1);
+        rs.close();
+        insertGoods.close();
+        conn.close();
+    }
     
+    /**
+     * 
+     * @param id
+     * @return 
+     * @throws java.sql.SQLException 
+     */
+    public static boolean del(long id) throws SQLException{
+        Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement delGoods = conn.prepareStatement("SELECT * from rest.goodsdel(?);");
+        delGoods.setLong(1, id);
+        ResultSet rs = delGoods.executeQuery();
+        rs.next();
+        boolean rez = rs.getBoolean(1);
+        rs.close();
+        delGoods.close();
+        conn.close();
+        return rez;
+    }
     /**
      * Получает список пользователей
      * @return список пользователей

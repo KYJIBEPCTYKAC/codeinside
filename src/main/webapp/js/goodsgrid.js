@@ -62,7 +62,7 @@ Ext.define('Rest.GoodsGrid', {
             icon: 'icons/del.gif',
             handler: function(grid, rowIndex, colIndex)
             {
-
+                grid.grid.delGoods.bind(grid.grid)(rowIndex);
             }
           }
 
@@ -73,7 +73,34 @@ Ext.define('Rest.GoodsGrid', {
     this.startLoad();
   },
   addGoods: function(){
-
+      Ext.MessageBox.prompt('Новый товар', 'Введите наиманование товара:', function(btn, text) {
+          if (text && btn=='ok'){
+              ExecQuery("goods/add", {name: text}, this.addGoodsComplete.bind(this), this.addGoodsError.bind(this));
+          }
+      }.bind(this));
+  },
+  addGoodsComplete: function(data){
+    this.getStore().add(data);
+  },
+  addGoodsError: function(){
+    showInfo("При добавлении товара произошла ошибка!");
+  },
+  delGoods: function(rowIndex){
+      this.myRowIndex = rowIndex;
+      Ext.MessageBox.confirm('Удаление', 'Вы действительно хотите удалить запись?', function(btn) {
+              if (btn=='yes') {
+                  var id = this.getStore().getAt(this.myRowIndex).data.id;
+                  ExecQuery("goods/del", {id: id}, this.delGoodsComplete.bind(this), this.delGoodsError.bind(this));
+              }
+              }.bind(this));
+  },
+  delGoodsComplete: function(data){
+      if (data){
+          this.getStore().removeAt(this.myRowIndex);
+      }
+  },
+  delGoodsError: function(a,b,c){
+    showInfo("Ошибка удаления");
   },
   loadListComplete: function(data){
     var tmpStore = makeStore(data);
