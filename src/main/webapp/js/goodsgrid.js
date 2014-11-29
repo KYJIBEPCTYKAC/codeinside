@@ -53,7 +53,15 @@ Ext.define('Rest.GoodsGrid', {
             icon: 'icons/pen.png',
             handler: function(grid, rowIndex, colIndex)
             {
-
+                Ext.MessageBox.prompt('Редактировать товар', 'Введите наиманование товара:', function(btn, text) {
+                    if (text && btn=='ok'){
+                        var tmpID = this.getStore().getAt(rowIndex).data.id;
+                        if (!tmpID)
+                            return;
+                        var tmpObj = {id: tmpID, name: text};
+                        ExecQuery("goods/upd", tmpObj, this.updGoodsComplete.bind(this), this.updGoodsError.bind(this), {rowIndex:rowIndex, name: text});
+                    }
+                }.bind(grid.grid));
             }
           },
           {
@@ -69,6 +77,17 @@ Ext.define('Rest.GoodsGrid', {
         ]
     }
   ],
+  updGoodsComplete: function(data, tmpObj){
+      if (data.id<1){
+          showInfo("Ошибка обновления!");
+          return;
+      }
+      var tmpItem = this.getStore().getAt(tmpObj.rowIndex);
+      tmpItem.set('name', tmpObj.name, {dirty: false});
+  },
+  updGoodsError: function(){
+    showInfo("Ошибка обновления!");
+  },
   reloadGoods: function(){
     this.startLoad();
   },

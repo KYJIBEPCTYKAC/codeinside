@@ -6,6 +6,7 @@
 
 package com.codeinside.rstmvn;
 
+import java.beans.Transient;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +16,7 @@ public class Goods {
 
     private long id;
     private String name;
+
     
     public long getId() {
         return id;
@@ -24,7 +26,7 @@ public class Goods {
         return name;
     }
     
-    public Goods (int goodsid, String goodsname){
+    public Goods (long goodsid, String goodsname){
         id = goodsid;
         name = goodsname;
     }
@@ -44,6 +46,25 @@ public class Goods {
         rs.close();
         insertGoods.close();
         conn.close();
+    }
+    /**
+     * Обновляет объект и сохраняет изменения в БД
+     * @param newName
+     * @return
+     * @throws SQLException 
+     */
+    public boolean upd(String newName) throws SQLException{
+        Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement updGoods = conn.prepareStatement("SELECT * from rest.goodsupd(?, ?);");
+        updGoods.setLong(1, id);
+        updGoods.setString(2, newName);
+        ResultSet rs = updGoods.executeQuery();
+        rs.next();
+        boolean tmpRez = rs.getBoolean(1);
+        rs.close();
+        updGoods.close();
+        conn.close();
+        return tmpRez;
     }
     
     /**
