@@ -6,65 +6,44 @@
 
 package com.codeinside.rstmvn;
 
-import java.beans.Transient;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-public class Goods {
+@Service
+public class Goods implements IGoods {
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    private long id;
-    private String name;
+    @Transactional
+    @Override
+    public GoodsModel add(String name){
+        String sql = "SELECT goodsadd id from rest.goodsadd(?);";
+        GoodsModel tmp = (GoodsModel)jdbcTemplate.queryForObject(sql, new Object[] { name }, new BeanPropertyRowMapper(GoodsModel.class));
+        tmp.setName(name);
+        return tmp;
+    }
 
-    
-    public long getId() {
-        return id;
-    }
-    
-    public String getName(){
-        return name;
-    }
-    
-    public Goods (long goodsid, String goodsname){
-        id = goodsid;
-        name = goodsname;
-    }
-/**
- * Создает товар, сохраняет его в БД и читает новый идентификатор
- * @param goodsname
- * @throws SQLException 
- */
-    public Goods(String goodsname) throws SQLException{
-        name = goodsname;
-        Connection conn = ConnectionFactory.getConnection();
-        PreparedStatement insertGoods = conn.prepareStatement("SELECT * from rest.goodsadd(?);");
-        insertGoods.setString(1, name);
-        ResultSet rs = insertGoods.executeQuery();
-        rs.next();
-        this.id = rs.getLong(1);
-        rs.close();
-        insertGoods.close();
-        conn.close();
-    }
     /**
      * Обновляет объект и сохраняет изменения в БД
+     * @param id
      * @param newName
      * @return
      * @throws SQLException 
      */
-    public boolean upd(String newName) throws SQLException{
-        Connection conn = ConnectionFactory.getConnection();
-        PreparedStatement updGoods = conn.prepareStatement("SELECT * from rest.goodsupd(?, ?);");
-        updGoods.setLong(1, id);
-        updGoods.setString(2, newName);
-        ResultSet rs = updGoods.executeQuery();
-        rs.next();
-        boolean tmpRez = rs.getBoolean(1);
-        rs.close();
-        updGoods.close();
-        conn.close();
-        return tmpRez;
+    @Transactional
+    @Override
+    public boolean upd(long id, String newName) throws SQLException{
+        String sql = "SELECT rest.goodsupd(?, ?);";
+        jdbcTemplate.queryForObject(sql, new Object[] { id, newName }, 
+            new BeanPropertyRowMapper(Object.class));
+        return true;
     }
     
     /**
@@ -73,61 +52,32 @@ public class Goods {
      * @return 
      * @throws java.sql.SQLException 
      */
-    public static boolean del(long id) throws SQLException{
-        Connection conn = ConnectionFactory.getConnection();
-        PreparedStatement delGoods = conn.prepareStatement("SELECT * from rest.goodsdel(?);");
-        delGoods.setLong(1, id);
-        ResultSet rs = delGoods.executeQuery();
-        rs.next();
-        boolean rez = rs.getBoolean(1);
-        rs.close();
-        delGoods.close();
-        conn.close();
-        return rez;
+    @Transactional
+    @Override
+    public boolean del(long id) throws SQLException{
+        String sql = "SELECT rest.goodsdel(?);";
+        jdbcTemplate.queryForObject(sql, new Object[] { id }, 
+            new BeanPropertyRowMapper(Object.class));
+        return true;
     }
     /**
      * Получает список пользователей
      * @return список пользователей
      * @throws SQLException
      */
-    public static Goods[] getGoodsList() throws SQLException{
-        Goods[] tmpArr;
-        int cnt = 0, goodsid;
-        String goodsname;
-        Connection conn = ConnectionFactory.getConnection();
-        conn.setAutoCommit(false);
-        PreparedStatement getGoods = conn.prepareStatement("select * from rest.goodsget();", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        ResultSet resultSet = getGoods.executeQuery();
-        int size;
-        try {
-            resultSet.last();
-            size = resultSet.getRow();
-            resultSet.beforeFirst();
+    @Transactional
+    @Override
+    public Object[] getGoodsList() throws SQLException{
+        String sql = "select * from rest.goodsget();";
+        List<GoodsModel> gms = new ArrayList<GoodsModel>();
+      
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+        for (Map row : rows) {
+            GoodsModel gm = new GoodsModel();
+            gm.setId(Integer.parseInt(String.valueOf(row.get("goodsid"))));
+            gm.setName((String)row.get("goodsname"));
+            gms.add(gm);
         }
-        catch(SQLException ex) {
-            size = 0;
-        }
-        
-        if (size == 0){
-            return null;
-        }
-        tmpArr = new Goods[size];
-        
-        while (resultSet.next())
-        {
-            goodsid = resultSet.getInt(1);
-            goodsname = resultSet.getString(2);
-            tmpArr[cnt] = new Goods(goodsid, goodsname);
-            cnt++;
-            // do something with the results.
-        }
-        resultSet.close();
-        getGoods.close();
-        
-        conn.commit();
-        conn.close();
-        return tmpArr;
+        return (Object[]) gms.toArray();
     }
-    
-
 }

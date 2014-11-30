@@ -140,3 +140,33 @@ function getUserType(numType){
     }
     return txtRole;
 }
+
+Ext.define('Ext.ux.CustomSpinner', {
+  extend: 'Ext.form.field.Spinner',
+  alias: 'widget.customspinner',
+
+  // override onSpinUp (using step isn't neccessary)
+  onSpinUp: function() {
+    var me = this;
+    if (!me.readOnly) {
+      var val = parseInt(me.getValue().split(' '), 10)||0;
+      val = val + me.step;
+      if (me.maxValue && val>me.maxValue)
+        val = me.maxValue;
+      me.setValue(val);
+    }
+  },
+
+  // override onSpinDown
+  onSpinDown: function() {
+    var me = this;
+    if (!me.readOnly) {
+      var val = parseInt(me.getValue().split(' '), 10)||0;
+      val = val - me.step;
+      if (me.minValue && val<me.minValue)
+        val = me.minValue;
+
+      me.setValue(val);
+    }
+  }
+});

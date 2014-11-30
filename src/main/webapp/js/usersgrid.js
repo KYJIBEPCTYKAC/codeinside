@@ -258,7 +258,9 @@ Ext.define('Rest.UsersGrid', {
     this.win.txtPassword1 = this.win.down('[name=txtPassword1]');
     this.win.txtPassword2 = this.win.down('[name=txtPassword2]');
     this.win.cmbRole = this.win.down('[name=cmbRole]');
-    this.win.cmbRole.setValue(parseInt(initRole));
+    if (data) {
+      this.win.cmbRole.setValue(parseInt(initRole));
+    }
     this.win.show();
   },
   updUserPass: function(){

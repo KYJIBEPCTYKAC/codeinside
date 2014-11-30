@@ -8,22 +8,31 @@ Ext.define('Rest.MerchGrid', {
         emptyText: 'Нет данных для отображения',
         deferEmptyText: false
       },
-      columns: this.columns,
+      columns: this.columnsList,
       tools: [
         {
           xtype: 'datefield',
-          format: 'd-m-Y'
+          format: 'd-m-Y',
+          listeners: {
+            boxready: function ( me, width, height, eOpts ){
+              this.dateOrder = me;
+            },
+            scope:this
+          }
+
         },
         {
-          xtype: 'button',
-          text: 'Загрузить'
+          type: 'next',
+          tooltip: 'Загрузить',
+          scope: this,
+          handler: this.loadPositions
         }
       ]
 
     });
     this.callParent();
   },
-  columns: [
+  columnsList: [
     {
       flex:1,
       text: 'Товар',
@@ -36,13 +45,19 @@ Ext.define('Rest.MerchGrid', {
       text: 'Требуется',
       sortable: true,
       width: 120,
-      dataIndex: 'goodsneed'
+      dataIndex: 'ordered'
     },
     {
-      text: 'Получено',
+      text: 'Есть',
       sortable: true,
       width: 120,
-      dataIndex: 'goodsgot'
+      dataIndex: 'in_store'
+    },
+    {
+      text: 'Заказ',
+      sortable: true,
+      width: 120,
+      dataIndex: 'amount'
     },
     {
       sortable: false,
@@ -51,16 +66,11 @@ Ext.define('Rest.MerchGrid', {
       items:
         [
           {
-//            iconCls: 'sell-col',
             tooltip: 'Редактировать',
             icon: 'icons/pen.png',
-            handler: function(grid, rowIndex, colIndex)
-            {
-
-            }
+            handler: this.editRow.bind(this)
           },
           {
-//            iconCls: 'sell-col',
             tooltip: 'Удалить',
             icon: 'icons/del.gif',
             handler: function(grid, rowIndex, colIndex)
@@ -74,6 +84,48 @@ Ext.define('Rest.MerchGrid', {
   ],
   addPosition: function(){
 
+  },
+  loadPositions: function(){
+    var tmpVal = this.dateOrder.getValue();;
+    if (!tmpVal){
+      showInfo("Не выбрана дата!");
+    }
+    this.orderDate = tmpVal;
+    ExecQuery('merch/getlist', {orderdate: this.orderDate, userid: user.id}, this.loadPositionsComplete.bind(this),  this.loadPositionsError.bind(this));
+    this.mask("Загрузка");
+
+  },
+  loadPositionsComplete: function(data) {
+    this.unmask();
+    if (!data.length){
+      tmpStore = this.getStore();
+      if (tmpStore)
+        tmpStore.removeAll();
+    }
+    var tmpStore = makeStore(data);
+    this.reconfigure(tmpStore, this.columnsList);
+
+  },
+  loadPositionsError: function() {
+    showInfo("Ошибка загрузки");
+    this.unmask();
+  },
+  editRow: function(grid, rowIndex, colIndex){
+    var tmpItem = this.getStore().getAt(rowIndex).data;
+    ExecQuery('merch/add', {
+      userid: user.id,
+      orderdate: this.orderDate,
+      goodsid: tmpItem.goodsid,
+      amount: 3,
+      matid: tmpItem.matid
+    }, this.editRowComplete.bind(this),  this.editRowError.bind(this));
+
+  },
+  editRowComplete: function(data){
+    
+  },
+  editRowError: function(){
+    showInfo("Ошибка редактирования");
   },
   reloadPositions: function(){
 

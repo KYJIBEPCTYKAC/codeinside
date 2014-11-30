@@ -61,7 +61,7 @@ Ext.define('Rest.GoodsGrid', {
                         var tmpObj = {id: tmpID, name: text};
                         ExecQuery("goods/upd", tmpObj, this.updGoodsComplete.bind(this), this.updGoodsError.bind(this), {rowIndex:rowIndex, name: text});
                     }
-                }.bind(grid.grid));
+                },grid.grid, false, grid.grid.getStore().getAt(rowIndex).data.name);
             }
           },
           {

@@ -23,23 +23,26 @@ public class GoodsController {
 //    @Autowired
 //    private DataSource dataSource;
 
+    @Autowired
+    private IGoods goods;
+    
     @RequestMapping("/goods/getlist")
-    public Goods[] getList() throws SQLException {
-        return Goods.getGoodsList();
+    public Object[] getList() throws SQLException {
+        return goods.getGoodsList();
     }
 
     @RequestMapping("/goods/add")
-    public Goods add(@RequestParam(value="name") String name) throws SQLException {
-        return new Goods(name);
+    public Object add(@RequestParam(value="name") String name) throws SQLException {
+        return goods.add(name);
     }
+    
     @RequestMapping("/goods/del")
     public boolean del(@RequestParam(value="id") Long id) throws SQLException {
-        return Goods.del(id);
+        return goods.del(id);
     }
     @RequestMapping("/goods/upd")
     public boolean upd(@RequestParam(value="id") Long id, @RequestParam(value="name") String name) throws SQLException {
-        Goods tmpGoods = new Goods(id, name);
-        return tmpGoods.upd(name);
+        return goods.upd(id, name);
     }
 
 }
