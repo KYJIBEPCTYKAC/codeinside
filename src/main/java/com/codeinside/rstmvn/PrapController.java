@@ -15,27 +15,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-public class MerchController {
+public class PrapController {
     @Autowired
-    private IMerch merch;
+    private Prap prap;
     
-    @RequestMapping("/merch/getlist")
+    @RequestMapping("/prap/getlist")
     public Object[] getList(@RequestParam(value="userid") Long userid, @RequestParam(value="orderdate") Date orderdate) throws SQLException {
-        return merch.getList(orderdate, userid);
+        return prap.getList(orderdate, userid);
     }
-//    @RequestMapping("/povar/del")
-//    public boolean del(@RequestParam(value="matid") long matid) throws SQLException {
-//        return merch.del(matid);
-//    }
-//
-    @RequestMapping("/merch/add")
+
+    
+    @RequestMapping("/prap/add")
     public Object addOrder(
             @RequestParam(value="userid") Long userid, 
+            @RequestParam(value="povarid") Long povarid, 
             @RequestParam(value="orderdate") Date orderdate, 
             @RequestParam(value="goodsid") Long goodsid, 
             @RequestParam(value="amount") float amount, 
             @RequestParam(value="matid") Long matid) throws SQLException {
-        return merch.addOrder(orderdate, userid, goodsid, amount, matid);
+        return prap.addOrder(orderdate, userid, povarid, goodsid, amount, matid);
     }
 
 }

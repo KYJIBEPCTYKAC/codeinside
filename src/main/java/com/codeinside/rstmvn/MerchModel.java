@@ -16,7 +16,7 @@ public class MerchModel {
     private float ordered;
     private float in_store;
     private long matid;
-    private float amount;
+    private float buy;
 
     public long getMatid() {
         return matid;
@@ -26,12 +26,12 @@ public class MerchModel {
         this.matid = matid;
     }
 
-    public float getAmount() {
-        return amount;
+    public float getBuy() {
+        return buy;
     }
 
-    public void setAmount(float amount) {
-        this.amount = amount;
+    public void setBuy(float buy) {
+        this.buy = buy;
     }
     
     public int getGoodsid() {

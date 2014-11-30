@@ -57,7 +57,7 @@ Ext.define('Rest.MerchGrid', {
       text: 'Заказ',
       sortable: true,
       width: 120,
-      dataIndex: 'amount'
+      dataIndex: 'buy'
     },
     {
       sortable: false,
@@ -68,13 +68,9 @@ Ext.define('Rest.MerchGrid', {
           {
             tooltip: 'Редактировать',
             icon: 'icons/pen.png',
-            handler: this.editRow.bind(this)
-          },
-          {
-            tooltip: 'Удалить',
-            icon: 'icons/del.gif',
             handler: function(grid, rowIndex, colIndex)
             {
+              grid.grid.editRow.bind(grid.grid)(grid, rowIndex, colIndex);
 
             }
           }
@@ -86,14 +82,12 @@ Ext.define('Rest.MerchGrid', {
 
   },
   loadPositions: function(){
-    var tmpVal = this.dateOrder.getValue();;
+    var tmpVal = this.dateOrder.getValue();
     if (!tmpVal){
       showInfo("Не выбрана дата!");
     }
     this.orderDate = tmpVal;
-    ExecQuery('merch/getlist', {orderdate: this.orderDate, userid: user.id}, this.loadPositionsComplete.bind(this),  this.loadPositionsError.bind(this));
-    this.mask("Загрузка");
-
+    this.reloadPositions();
   },
   loadPositionsComplete: function(data) {
     this.unmask();
@@ -111,23 +105,35 @@ Ext.define('Rest.MerchGrid', {
     this.unmask();
   },
   editRow: function(grid, rowIndex, colIndex){
-    var tmpItem = this.getStore().getAt(rowIndex).data;
-    ExecQuery('merch/add', {
-      userid: user.id,
-      orderdate: this.orderDate,
-      goodsid: tmpItem.goodsid,
-      amount: 3,
-      matid: tmpItem.matid
-    }, this.editRowComplete.bind(this),  this.editRowError.bind(this));
+    Ext.MessageBox.prompt('Редактировать количество', 'Введите количество товара:', function(btn, text) {
+      if (text && btn=='ok'&& parseFloat(text)){
+        var tmpItem = this.getStore().getAt(rowIndex).data;
+        ExecQuery('merch/add', {
+          userid: user.id,
+          orderdate: this.orderDate,
+          goodsid: tmpItem.goodsid,
+          amount: parseFloat(text),
+          matid: tmpItem.matid
+        }, this.editRowComplete.bind(this),  this.editRowError.bind(this));
+      }
+    }.bind(this), false, false,this.getStore().getAt(rowIndex).data.buy);
+
 
   },
   editRowComplete: function(data){
-    
+    if (data){
+      this.reloadPositions();
+    }
+    else{
+      this.editRowError();
+    }
   },
   editRowError: function(){
     showInfo("Ошибка редактирования");
   },
   reloadPositions: function(){
+    ExecQuery('merch/getlist', {orderdate: this.orderDate, userid: user.id}, this.loadPositionsComplete.bind(this),  this.loadPositionsError.bind(this));
+    this.mask("Загрузка");
 
   }
 

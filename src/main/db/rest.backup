@@ -4,7 +4,7 @@
 
 -- Dumped from database version 9.3.4
 -- Dumped by pg_dump version 9.3.4
--- Started on 2014-11-30 18:14:16
+-- Started on 2014-11-30 21:04:24
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -14,8 +14,8 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 
 --
--- TOC entry 1997 (class 1262 OID 819654)
--- Dependencies: 1996
+-- TOC entry 1999 (class 1262 OID 828088)
+-- Dependencies: 1998
 -- Name: rest; Type: COMMENT; Schema: -; Owner: postgres
 --
 
@@ -23,7 +23,7 @@ COMMENT ON DATABASE rest IS 'Ресторан. Тестовое задание "
 
 
 --
--- TOC entry 7 (class 2615 OID 819655)
+-- TOC entry 6 (class 2615 OID 828089)
 -- Name: rest; Type: SCHEMA; Schema: -; Owner: postgres
 --
 
@@ -33,8 +33,8 @@ CREATE SCHEMA rest;
 ALTER SCHEMA rest OWNER TO postgres;
 
 --
--- TOC entry 2000 (class 0 OID 0)
--- Dependencies: 7
+-- TOC entry 2002 (class 0 OID 0)
+-- Dependencies: 6
 -- Name: SCHEMA rest; Type: COMMENT; Schema: -; Owner: postgres
 --
 
@@ -50,7 +50,7 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- TOC entry 2001 (class 0 OID 0)
+-- TOC entry 2003 (class 0 OID 0)
 -- Dependencies: 179
 -- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
 --
@@ -61,7 +61,7 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = rest, pg_catalog;
 
 --
--- TOC entry 193 (class 1255 OID 827944)
+-- TOC entry 192 (class 1255 OID 828090)
 -- Name: check_login(character varying, character varying); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -83,7 +83,7 @@ $$;
 ALTER FUNCTION rest.check_login(OUT userid bigint, OUT usertype bigint, username character varying, userpass character varying) OWNER TO postgres;
 
 --
--- TOC entry 196 (class 1255 OID 827950)
+-- TOC entry 193 (class 1255 OID 828091)
 -- Name: goodsadd(character varying); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -103,7 +103,7 @@ $$;
 ALTER FUNCTION rest.goodsadd(goodsname character varying) OWNER TO postgres;
 
 --
--- TOC entry 195 (class 1255 OID 827951)
+-- TOC entry 194 (class 1255 OID 828092)
 -- Name: goodsdel(bigint); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -120,7 +120,7 @@ $$;
 ALTER FUNCTION rest.goodsdel(goodsid bigint) OWNER TO postgres;
 
 --
--- TOC entry 194 (class 1255 OID 827946)
+-- TOC entry 195 (class 1255 OID 828093)
 -- Name: goodsget(); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -143,7 +143,7 @@ $$;
 ALTER FUNCTION rest.goodsget() OWNER TO postgres;
 
 --
--- TOC entry 197 (class 1255 OID 827958)
+-- TOC entry 196 (class 1255 OID 828094)
 -- Name: goodsupd(bigint, character varying); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -160,7 +160,7 @@ $$;
 ALTER FUNCTION rest.goodsupd(goodsid bigint, goodsname character varying) OWNER TO postgres;
 
 --
--- TOC entry 202 (class 1255 OID 827997)
+-- TOC entry 197 (class 1255 OID 828095)
 -- Name: merchadd(bigint, date, bigint, numeric, bigint); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -210,7 +210,7 @@ $$;
 ALTER FUNCTION rest.merchadd(puserid bigint, porderdate date, pgoodsid bigint, pamount numeric, pmatid bigint) OWNER TO postgres;
 
 --
--- TOC entry 200 (class 1255 OID 827996)
+-- TOC entry 198 (class 1255 OID 828096)
 -- Name: merchget(date, bigint); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -241,7 +241,7 @@ if (tmpDocID is null) then
 end if;
 
 FOR rec IN 
-	select r.goodsid, g.name, (r.ordered_day-r.cons_day) ordered, (r.buy_total- r.cons_total) in_store, coalesce(mat.id,0) mat_id, coalesce(mat.amount,0) _amount from 
+	select r.goodsid, g.name, (r.ordered_day-r.cons_day) ordered, (r.buy_total- r.cons_total) in_store, coalesce(mmm.id,0) mat_id, coalesce(mmm.amount,0) am from 
 	(select ord.goodsid, ord.ordered_day, coalesce(rcv.cons_day,0) cons_day, coalesce(buy_total,0) buy_total, coalesce(cons_total,0) cons_total from (
 	select m.goodsid, sum(m.amount) ordered_day from rest.mat m
 		inner join rest.doc d on d.id=m.doc and d.datedoc=porderdate
@@ -270,14 +270,15 @@ FOR rec IN
 		) consum on consum.goodsid=ord.goodsid
 	) r
 	inner join rest.goods g on g.id=r.goodsid
-	left join rest.mat on mat.goodsid=r.goodsid and mat.doc = tmpDocID
+	left join rest.mat mmm on mmm.goodsid=r.goodsid and mmm.doc = tmpDocID
+	order by 2
 	LOOP
 		goodsid = rec.goodsid;
 		goodsname = rec.name;
 		ordered = rec.ordered;
 		in_store = rec.in_store;
 		matid = rec.mat_id;
-		buy = rec._amount;
+		buy = rec.am;
 		RETURN next;
 	END LOOP;
 END
@@ -287,7 +288,7 @@ $$;
 ALTER FUNCTION rest.merchget(porderdate date, puserid bigint) OWNER TO postgres;
 
 --
--- TOC entry 199 (class 1255 OID 827989)
+-- TOC entry 199 (class 1255 OID 828097)
 -- Name: povarorderadd(bigint, date, bigint, numeric); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -351,7 +352,7 @@ $$;
 ALTER FUNCTION rest.povarorderadd(puserid bigint, porderdate date, pgoodsid bigint, pamount numeric) OWNER TO postgres;
 
 --
--- TOC entry 201 (class 1255 OID 827988)
+-- TOC entry 204 (class 1255 OID 828098)
 -- Name: povarorderget(bigint, date); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -382,18 +383,26 @@ if (tmpDocID is null) then
 end if;
 
 FOR rec IN 
-      select m.id matid, m.doc docid, m.amount ordered, m.goodsid, g.name goodsname
+      select m.id matid, m.doc docid, m.amount ordered, m.goodsid, g.name goodsname, coalesce(rcv_total,0) rcv_total
 	from rest.mat as m
 	inner join rest.doc d on d.id = m.doc
 	inner join rest.goods g on m.goodsid=g.id
+	left join (
+		select m.goodsid, sum(amount) rcv_total from rest.mat m
+		inner join rest.doc d on d.id=m.doc and d.datedoc=porderdate
+		inner join rest.user u on u.id=d.contr_from and u.type=2 --кладовщик
+		inner join rest.user u2 on u2.id=d.contr_to and u2.id=puserid --повар
+		group by m.goodsid) 
+	rcv on rcv.goodsid=m.goodsid
 	where d.id=tmpDocID
+	order by 5
 	LOOP
 		matid = rec.matid;
 		docid = rec.docid;
 		goodsid = rec.goodsid;
 		goodsname = rec.goodsname;
 		ordered = rec.ordered;
-		received = 0;
+		received = rec.rcv_total;
 		RETURN next;
 	END LOOP;
 END
@@ -403,7 +412,108 @@ $$;
 ALTER FUNCTION rest.povarorderget(puserid bigint, porderdate date) OWNER TO postgres;
 
 --
--- TOC entry 198 (class 1255 OID 827959)
+-- TOC entry 200 (class 1255 OID 828099)
+-- Name: prapadd(bigint, bigint, date, bigint, numeric, bigint); Type: FUNCTION; Schema: rest; Owner: postgres
+--
+
+CREATE FUNCTION prapadd(puserid bigint, povarid bigint, porderdate date, pgoodsid bigint, pamount numeric, pmatid bigint) RETURNS bigint
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  tmpDocID bigint;
+  tmpMatID bigint;
+BEGIN
+  if (pmatid = 0) then
+        select id into tmpDocID 
+	    from rest.doc d 
+	    where d.datedoc=porderdate and 
+		  d.userid=puserid and 
+		  d.contr_from=puserid and
+		  d.contr_to=povarid;
+		  
+
+	if (tmpDocID is null) then
+
+	  insert into rest.doc(datedoc, contr_from, contr_to, userid)
+	    values (porderdate, puserid, povarid, puserid);
+
+	    select lastval() into tmpDocID;
+	end if;
+    insert into rest.mat(doc, amount, goodsid)
+      values(tmpDocID, pamount, pgoodsid);
+      
+     select lastval() into tmpMatID;
+    else
+      update rest.mat set amount=pamount where pmatid=id;
+      tmpMatID = pmatid;
+  end if;
+
+  RETURN tmpMatID;
+END
+$$;
+
+
+ALTER FUNCTION rest.prapadd(puserid bigint, povarid bigint, porderdate date, pgoodsid bigint, pamount numeric, pmatid bigint) OWNER TO postgres;
+
+--
+-- TOC entry 201 (class 1255 OID 828100)
+-- Name: prapget(date, bigint); Type: FUNCTION; Schema: rest; Owner: postgres
+--
+
+CREATE FUNCTION prapget(porderdate date, puserid bigint) RETURNS TABLE(goodsid bigint, goodsname character varying, povarid bigint, povarname character varying, ordered numeric, in_store numeric, consid bigint, consumed numeric)
+    LANGUAGE plpgsql
+    AS $$
+ DECLARE
+ rec RECORD;
+ tmpDocID bigint;
+ storeID bigint;
+BEGIN
+
+FOR rec IN 
+	select r.goodsid, r.contr_from, r.name povarname, g.name goodsname, (r.ordered_day) ordered, (r.buy_total- r.cons_total) in_store, coalesce(mmm.id,0) matid, coalesce(mmm.amount, 0) cons from 
+		(select ord.goodsid, ord.contr_from, ord.name, ord.ordered_day, coalesce(buy_total,0) buy_total, coalesce(cons_total,0) cons_total from (
+		select m.goodsid, d.contr_from, u.name, sum(m.amount) ordered_day from rest.mat m
+			inner join rest.doc d on d.id=m.doc and d.datedoc=porderdate
+			inner join rest.user u on u.id=d.contr_from and u.type=0 --повар
+			inner join rest.user u2 on u2.id=d.contr_to and u2.type=2 --кладовщик
+		group by m.goodsid, d.contr_from, u.name) ord
+		left join  (
+		select m.goodsid, sum(m.amount) buy_total from rest.mat m
+			inner join rest.doc d on d.id=m.doc
+			inner join rest.user u on u.id=d.contr_from and u.type=1 --снабженец
+			inner join rest.user u2 on u2.id=d.contr_to and u2.type=2 --кладовщик
+		group by m.goodsid) buy on buy.goodsid=ord.goodsid
+		left join (
+			select m.goodsid, sum(amount) cons_total from rest.mat m
+			inner join rest.doc d on d.id=m.doc
+			inner join rest.user u on u.id=d.contr_from and u.type=2 --кладовщик
+			inner join rest.user u2 on u2.id=d.contr_to and u2.type=0 --повар
+			group by m.goodsid
+			) consum on consum.goodsid=ord.goodsid
+		) r
+		inner join rest.goods g on g.id=r.goodsid
+		left join rest.doc d on r.contr_from=d.contr_to and d.contr_from=puserid and d.datedoc=porderdate
+		left join rest.mat mmm on mmm.doc = d.id and mmm.goodsid = r.goodsid
+		order by 4
+	LOOP
+		goodsid = rec.goodsid;
+		goodsname = rec.goodsname;
+		povarid = rec.contr_from;
+		povarname = rec.povarname;
+		ordered = rec.ordered;
+		in_store = rec.in_store;
+		consid = rec.matid;
+		consumed = rec.cons;
+		RETURN next;
+	END LOOP;
+END
+$$;
+
+
+ALTER FUNCTION rest.prapget(porderdate date, puserid bigint) OWNER TO postgres;
+
+--
+-- TOC entry 202 (class 1255 OID 828101)
 -- Name: useradd(character varying, character varying, bigint); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -423,7 +533,7 @@ $$;
 ALTER FUNCTION rest.useradd(username character varying, userpass character varying, usertype bigint) OWNER TO postgres;
 
 --
--- TOC entry 192 (class 1255 OID 827945)
+-- TOC entry 203 (class 1255 OID 828102)
 -- Name: usersget(); Type: FUNCTION; Schema: rest; Owner: postgres
 --
 
@@ -451,7 +561,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- TOC entry 174 (class 1259 OID 819684)
+-- TOC entry 171 (class 1259 OID 828103)
 -- Name: doc; Type: TABLE; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -469,8 +579,8 @@ CREATE TABLE doc (
 ALTER TABLE rest.doc OWNER TO postgres;
 
 --
--- TOC entry 2002 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2004 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: TABLE doc; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -478,8 +588,8 @@ COMMENT ON TABLE doc IS 'Документы';
 
 
 --
--- TOC entry 2003 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2005 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: COLUMN doc.name; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -487,8 +597,8 @@ COMMENT ON COLUMN doc.name IS 'Описание документа';
 
 
 --
--- TOC entry 2004 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2006 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: COLUMN doc.datedoc; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -496,8 +606,8 @@ COMMENT ON COLUMN doc.datedoc IS 'Дата документа';
 
 
 --
--- TOC entry 2005 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2007 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: COLUMN doc.contr_from; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -505,8 +615,8 @@ COMMENT ON COLUMN doc.contr_from IS 'Контрагент "От кого"';
 
 
 --
--- TOC entry 2006 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2008 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: COLUMN doc.contr_to; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -514,8 +624,8 @@ COMMENT ON COLUMN doc.contr_to IS 'Контрагент "Кому"';
 
 
 --
--- TOC entry 2007 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2009 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: COLUMN doc.completed; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -523,8 +633,8 @@ COMMENT ON COLUMN doc.completed IS 'Признак завершенности д
 
 
 --
--- TOC entry 2008 (class 0 OID 0)
--- Dependencies: 174
+-- TOC entry 2010 (class 0 OID 0)
+-- Dependencies: 171
 -- Name: COLUMN doc.userid; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -532,7 +642,7 @@ COMMENT ON COLUMN doc.userid IS 'Автор';
 
 
 --
--- TOC entry 173 (class 1259 OID 819682)
+-- TOC entry 172 (class 1259 OID 828107)
 -- Name: doc_id_seq; Type: SEQUENCE; Schema: rest; Owner: postgres
 --
 
@@ -547,8 +657,8 @@ CREATE SEQUENCE doc_id_seq
 ALTER TABLE rest.doc_id_seq OWNER TO postgres;
 
 --
--- TOC entry 2009 (class 0 OID 0)
--- Dependencies: 173
+-- TOC entry 2011 (class 0 OID 0)
+-- Dependencies: 172
 -- Name: doc_id_seq; Type: SEQUENCE OWNED BY; Schema: rest; Owner: postgres
 --
 
@@ -556,7 +666,7 @@ ALTER SEQUENCE doc_id_seq OWNED BY doc.id;
 
 
 --
--- TOC entry 172 (class 1259 OID 819658)
+-- TOC entry 173 (class 1259 OID 828109)
 -- Name: goods; Type: TABLE; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -569,8 +679,8 @@ CREATE TABLE goods (
 ALTER TABLE rest.goods OWNER TO postgres;
 
 --
--- TOC entry 2010 (class 0 OID 0)
--- Dependencies: 172
+-- TOC entry 2012 (class 0 OID 0)
+-- Dependencies: 173
 -- Name: TABLE goods; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -578,7 +688,7 @@ COMMENT ON TABLE goods IS 'Товары';
 
 
 --
--- TOC entry 171 (class 1259 OID 819656)
+-- TOC entry 174 (class 1259 OID 828112)
 -- Name: goods_id_seq; Type: SEQUENCE; Schema: rest; Owner: postgres
 --
 
@@ -593,8 +703,8 @@ CREATE SEQUENCE goods_id_seq
 ALTER TABLE rest.goods_id_seq OWNER TO postgres;
 
 --
--- TOC entry 2011 (class 0 OID 0)
--- Dependencies: 171
+-- TOC entry 2013 (class 0 OID 0)
+-- Dependencies: 174
 -- Name: goods_id_seq; Type: SEQUENCE OWNED BY; Schema: rest; Owner: postgres
 --
 
@@ -602,7 +712,7 @@ ALTER SEQUENCE goods_id_seq OWNED BY goods.id;
 
 
 --
--- TOC entry 178 (class 1259 OID 819714)
+-- TOC entry 175 (class 1259 OID 828114)
 -- Name: mat; Type: TABLE; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -618,8 +728,8 @@ CREATE TABLE mat (
 ALTER TABLE rest.mat OWNER TO postgres;
 
 --
--- TOC entry 2012 (class 0 OID 0)
--- Dependencies: 178
+-- TOC entry 2014 (class 0 OID 0)
+-- Dependencies: 175
 -- Name: TABLE mat; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -627,8 +737,8 @@ COMMENT ON TABLE mat IS 'Движение товаров';
 
 
 --
--- TOC entry 2013 (class 0 OID 0)
--- Dependencies: 178
+-- TOC entry 2015 (class 0 OID 0)
+-- Dependencies: 175
 -- Name: COLUMN mat.name; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -636,8 +746,8 @@ COMMENT ON COLUMN mat.name IS 'Комментарий к строчке доку
 
 
 --
--- TOC entry 2014 (class 0 OID 0)
--- Dependencies: 178
+-- TOC entry 2016 (class 0 OID 0)
+-- Dependencies: 175
 -- Name: COLUMN mat.doc; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -645,8 +755,8 @@ COMMENT ON COLUMN mat.doc IS 'Ссылка на документ';
 
 
 --
--- TOC entry 2015 (class 0 OID 0)
--- Dependencies: 178
+-- TOC entry 2017 (class 0 OID 0)
+-- Dependencies: 175
 -- Name: COLUMN mat.amount; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -654,8 +764,8 @@ COMMENT ON COLUMN mat.amount IS 'Количество';
 
 
 --
--- TOC entry 2016 (class 0 OID 0)
--- Dependencies: 178
+-- TOC entry 2018 (class 0 OID 0)
+-- Dependencies: 175
 -- Name: COLUMN mat.goodsid; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -663,7 +773,7 @@ COMMENT ON COLUMN mat.goodsid IS 'ID товара';
 
 
 --
--- TOC entry 177 (class 1259 OID 819712)
+-- TOC entry 176 (class 1259 OID 828118)
 -- Name: mat_id_seq; Type: SEQUENCE; Schema: rest; Owner: postgres
 --
 
@@ -678,8 +788,8 @@ CREATE SEQUENCE mat_id_seq
 ALTER TABLE rest.mat_id_seq OWNER TO postgres;
 
 --
--- TOC entry 2017 (class 0 OID 0)
--- Dependencies: 177
+-- TOC entry 2019 (class 0 OID 0)
+-- Dependencies: 176
 -- Name: mat_id_seq; Type: SEQUENCE OWNED BY; Schema: rest; Owner: postgres
 --
 
@@ -687,7 +797,7 @@ ALTER SEQUENCE mat_id_seq OWNED BY mat.id;
 
 
 --
--- TOC entry 176 (class 1259 OID 819703)
+-- TOC entry 177 (class 1259 OID 828120)
 -- Name: user; Type: TABLE; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -702,8 +812,8 @@ CREATE TABLE "user" (
 ALTER TABLE rest."user" OWNER TO postgres;
 
 --
--- TOC entry 2018 (class 0 OID 0)
--- Dependencies: 176
+-- TOC entry 2020 (class 0 OID 0)
+-- Dependencies: 177
 -- Name: TABLE "user"; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -711,8 +821,8 @@ COMMENT ON TABLE "user" IS 'Пользователи';
 
 
 --
--- TOC entry 2019 (class 0 OID 0)
--- Dependencies: 176
+-- TOC entry 2021 (class 0 OID 0)
+-- Dependencies: 177
 -- Name: COLUMN "user".pass; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -720,8 +830,8 @@ COMMENT ON COLUMN "user".pass IS 'Пароль';
 
 
 --
--- TOC entry 2020 (class 0 OID 0)
--- Dependencies: 176
+-- TOC entry 2022 (class 0 OID 0)
+-- Dependencies: 177
 -- Name: COLUMN "user".type; Type: COMMENT; Schema: rest; Owner: postgres
 --
 
@@ -732,7 +842,7 @@ COMMENT ON COLUMN "user".type IS '0 - повар
 
 
 --
--- TOC entry 175 (class 1259 OID 819701)
+-- TOC entry 178 (class 1259 OID 828124)
 -- Name: user_id_seq; Type: SEQUENCE; Schema: rest; Owner: postgres
 --
 
@@ -747,8 +857,8 @@ CREATE SEQUENCE user_id_seq
 ALTER TABLE rest.user_id_seq OWNER TO postgres;
 
 --
--- TOC entry 2021 (class 0 OID 0)
--- Dependencies: 175
+-- TOC entry 2023 (class 0 OID 0)
+-- Dependencies: 178
 -- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: rest; Owner: postgres
 --
 
@@ -756,7 +866,7 @@ ALTER SEQUENCE user_id_seq OWNED BY "user".id;
 
 
 --
--- TOC entry 1854 (class 2604 OID 819687)
+-- TOC entry 1856 (class 2604 OID 828126)
 -- Name: id; Type: DEFAULT; Schema: rest; Owner: postgres
 --
 
@@ -764,7 +874,7 @@ ALTER TABLE ONLY doc ALTER COLUMN id SET DEFAULT nextval('doc_id_seq'::regclass)
 
 
 --
--- TOC entry 1853 (class 2604 OID 819661)
+-- TOC entry 1857 (class 2604 OID 828127)
 -- Name: id; Type: DEFAULT; Schema: rest; Owner: postgres
 --
 
@@ -772,7 +882,7 @@ ALTER TABLE ONLY goods ALTER COLUMN id SET DEFAULT nextval('goods_id_seq'::regcl
 
 
 --
--- TOC entry 1858 (class 2604 OID 819717)
+-- TOC entry 1859 (class 2604 OID 828128)
 -- Name: id; Type: DEFAULT; Schema: rest; Owner: postgres
 --
 
@@ -780,7 +890,7 @@ ALTER TABLE ONLY mat ALTER COLUMN id SET DEFAULT nextval('mat_id_seq'::regclass)
 
 
 --
--- TOC entry 1856 (class 2604 OID 819706)
+-- TOC entry 1861 (class 2604 OID 828129)
 -- Name: id; Type: DEFAULT; Schema: rest; Owner: postgres
 --
 
@@ -788,8 +898,8 @@ ALTER TABLE ONLY "user" ALTER COLUMN id SET DEFAULT nextval('user_id_seq'::regcl
 
 
 --
--- TOC entry 1987 (class 0 OID 819684)
--- Dependencies: 174
+-- TOC entry 1986 (class 0 OID 828103)
+-- Dependencies: 171
 -- Data for Name: doc; Type: TABLE DATA; Schema: rest; Owner: postgres
 --
 
@@ -799,21 +909,23 @@ COPY doc (id, name, datedoc, contr_from, contr_to, completed, userid) FROM stdin
 8	\N	2014-11-24	2	10	f	2
 20	\N	2014-11-30	9	10	f	9
 21	\N	2014-11-29	9	10	f	9
+22	\N	2014-11-30	10	2	f	10
+23	\N	2014-11-29	10	2	f	10
 \.
 
 
 --
--- TOC entry 2022 (class 0 OID 0)
--- Dependencies: 173
+-- TOC entry 2024 (class 0 OID 0)
+-- Dependencies: 172
 -- Name: doc_id_seq; Type: SEQUENCE SET; Schema: rest; Owner: postgres
 --
 
-SELECT pg_catalog.setval('doc_id_seq', 21, true);
+SELECT pg_catalog.setval('doc_id_seq', 23, true);
 
 
 --
--- TOC entry 1985 (class 0 OID 819658)
--- Dependencies: 172
+-- TOC entry 1988 (class 0 OID 828109)
+-- Dependencies: 173
 -- Data for Name: goods; Type: TABLE DATA; Schema: rest; Owner: postgres
 --
 
@@ -829,8 +941,8 @@ COPY goods (id, name) FROM stdin;
 
 
 --
--- TOC entry 2023 (class 0 OID 0)
--- Dependencies: 171
+-- TOC entry 2025 (class 0 OID 0)
+-- Dependencies: 174
 -- Name: goods_id_seq; Type: SEQUENCE SET; Schema: rest; Owner: postgres
 --
 
@@ -838,8 +950,8 @@ SELECT pg_catalog.setval('goods_id_seq', 10, true);
 
 
 --
--- TOC entry 1991 (class 0 OID 819714)
--- Dependencies: 178
+-- TOC entry 1990 (class 0 OID 828114)
+-- Dependencies: 175
 -- Data for Name: mat; Type: TABLE DATA; Schema: rest; Owner: postgres
 --
 
@@ -848,35 +960,41 @@ COPY mat (id, name, doc, amount, goodsid) FROM stdin;
 6	\N	6	5.000	4
 7	\N	6	6.000	10
 8	\N	7	4.000	6
+11	\N	20	3.000	10
+10	\N	20	1.000	6
+12	\N	21	5.000	6
+13	\N	22	3.000	10
+15	\N	23	1.000	6
+14	\N	22	3.000	6
 \.
 
 
 --
--- TOC entry 2024 (class 0 OID 0)
--- Dependencies: 177
+-- TOC entry 2026 (class 0 OID 0)
+-- Dependencies: 176
 -- Name: mat_id_seq; Type: SEQUENCE SET; Schema: rest; Owner: postgres
 --
 
-SELECT pg_catalog.setval('mat_id_seq', 8, true);
+SELECT pg_catalog.setval('mat_id_seq', 15, true);
 
 
 --
--- TOC entry 1989 (class 0 OID 819703)
--- Dependencies: 176
+-- TOC entry 1992 (class 0 OID 828120)
+-- Dependencies: 177
 -- Data for Name: user; Type: TABLE DATA; Schema: rest; Owner: postgres
 --
 
 COPY "user" (id, name, pass, type) FROM stdin;
 1	admin	123	3
-10	prapor	123	2
 2	povar	123	0
 9	merch	123	1
+10	prap	123	2
 \.
 
 
 --
--- TOC entry 2025 (class 0 OID 0)
--- Dependencies: 175
+-- TOC entry 2027 (class 0 OID 0)
+-- Dependencies: 178
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: rest; Owner: postgres
 --
 
@@ -884,7 +1002,7 @@ SELECT pg_catalog.setval('user_id_seq', 10, true);
 
 
 --
--- TOC entry 1865 (class 2606 OID 819690)
+-- TOC entry 1863 (class 2606 OID 828131)
 -- Name: pk_doc; Type: CONSTRAINT; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -893,7 +1011,7 @@ ALTER TABLE ONLY doc
 
 
 --
--- TOC entry 1861 (class 2606 OID 819663)
+-- TOC entry 1865 (class 2606 OID 828133)
 -- Name: pk_goods; Type: CONSTRAINT; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -902,7 +1020,7 @@ ALTER TABLE ONLY goods
 
 
 --
--- TOC entry 1871 (class 2606 OID 819720)
+-- TOC entry 1869 (class 2606 OID 828135)
 -- Name: pk_mat; Type: CONSTRAINT; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -911,7 +1029,7 @@ ALTER TABLE ONLY mat
 
 
 --
--- TOC entry 1867 (class 2606 OID 819709)
+-- TOC entry 1871 (class 2606 OID 828137)
 -- Name: pk_users; Type: CONSTRAINT; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -920,7 +1038,7 @@ ALTER TABLE ONLY "user"
 
 
 --
--- TOC entry 1863 (class 2606 OID 819665)
+-- TOC entry 1867 (class 2606 OID 828139)
 -- Name: unq_goods_name; Type: CONSTRAINT; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -929,7 +1047,7 @@ ALTER TABLE ONLY goods
 
 
 --
--- TOC entry 1869 (class 2606 OID 819711)
+-- TOC entry 1873 (class 2606 OID 828141)
 -- Name: unq_user_name; Type: CONSTRAINT; Schema: rest; Owner: postgres; Tablespace: 
 --
 
@@ -938,7 +1056,7 @@ ALTER TABLE ONLY "user"
 
 
 --
--- TOC entry 1872 (class 2606 OID 827963)
+-- TOC entry 1874 (class 2606 OID 828142)
 -- Name: fk_doc_user_from; Type: FK CONSTRAINT; Schema: rest; Owner: postgres
 --
 
@@ -947,7 +1065,7 @@ ALTER TABLE ONLY doc
 
 
 --
--- TOC entry 1873 (class 2606 OID 827968)
+-- TOC entry 1875 (class 2606 OID 828147)
 -- Name: fk_doc_user_to; Type: FK CONSTRAINT; Schema: rest; Owner: postgres
 --
 
@@ -956,7 +1074,7 @@ ALTER TABLE ONLY doc
 
 
 --
--- TOC entry 1874 (class 2606 OID 827973)
+-- TOC entry 1876 (class 2606 OID 828152)
 -- Name: fk_doc_user_userid; Type: FK CONSTRAINT; Schema: rest; Owner: postgres
 --
 
@@ -965,7 +1083,7 @@ ALTER TABLE ONLY doc
 
 
 --
--- TOC entry 1875 (class 2606 OID 827978)
+-- TOC entry 1877 (class 2606 OID 828157)
 -- Name: fk_mat_doc; Type: FK CONSTRAINT; Schema: rest; Owner: postgres
 --
 
@@ -974,7 +1092,7 @@ ALTER TABLE ONLY mat
 
 
 --
--- TOC entry 1876 (class 2606 OID 827983)
+-- TOC entry 1878 (class 2606 OID 828162)
 -- Name: fk_mat_goods; Type: FK CONSTRAINT; Schema: rest; Owner: postgres
 --
 
@@ -983,8 +1101,8 @@ ALTER TABLE ONLY mat
 
 
 --
--- TOC entry 1999 (class 0 OID 0)
--- Dependencies: 5
+-- TOC entry 2001 (class 0 OID 0)
+-- Dependencies: 7
 -- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 
@@ -994,7 +1112,7 @@ GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
--- Completed on 2014-11-30 18:14:17
+-- Completed on 2014-11-30 21:04:24
 
 --
 -- PostgreSQL database dump complete
